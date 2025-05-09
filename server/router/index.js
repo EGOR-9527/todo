@@ -1,6 +1,7 @@
 const router = require("./router");
 const userController = require("../controller/userController");
 const ErrorHandler = require("../Error/error");
+const authMiddleware = require("../middlewares/authMiddleware")
 
 // Тут все роутеры
 router.post("/registration", (req, res) =>
@@ -8,16 +9,16 @@ router.post("/registration", (req, res) =>
 );
 router.post("/login", (req, res) => userController.login(req, res));
 router.post("/logout", (req, res) => userController.logout(req, res));
-router.post("/addtask", (req, res) => userController.addTask(req, res));
+router.post("/addtask", (req, res) => [userController.addTask(req, res), authMiddleware(req, res)]);
 
 router.post("/getallusertask", (req, res) =>
-  userController.getAllUserTask(req, res)
+  [userController.getAllUserTask(req, res), authMiddleware(req, res)]
 );
 
-router.post("/getbyidtask", (req, res) => userController.getByIdTask(req, res));
+router.post("/getbyidtask", (req, res) => [userController.getByIdTask(req, res), authMiddleware(req, res)]);
 
-router.delete("/removetask", (req, res) => userController.removeTask(req, res));
-router.put("/updatetask", (req, res) => userController.updateTask(req, res));
+router.delete("/removetask", (req, res) => [userController.removeTask(req, res), authMiddleware(req, res)]);
+router.put("/updatetask", (req, res) => [userController.updateTask(req, res), authMiddleware(req, res)]);
 
 const startRouters = (req, res) => {
   let body = "";

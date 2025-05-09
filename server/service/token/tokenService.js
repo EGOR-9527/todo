@@ -2,6 +2,7 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const Data = require("../../database/data");
 const ErrorHandler = require("../../Error/error");
+const { v4: uuidv4 } = require('uuid');
 
 class TokenService {
   generateTokens(payload) {
@@ -49,7 +50,7 @@ class TokenService {
       }
 
       const newUser = {
-        userId: Date.now().toString(),
+        userId: uuidv4(),
         email: email,
         refreshToken: refreshToken,
       };

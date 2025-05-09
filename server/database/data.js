@@ -57,12 +57,13 @@ class Data {
 
       // Проверка на дубликаты по уникальному полю (например, email или taskId)
       const existing = jsonData[section].find(
-        (item) => item.email === data.email || item.taskId === data.taskId
+        (item) => item.name === data.name
       );
+
       if (existing) {
         throw ErrorHandler.error(
           400,
-          `Объект с таким идентификатором уже существует`
+          "Такое имя уже существует"
         );
       }
 
@@ -125,13 +126,6 @@ class Data {
       const fileContent = await fs.readFile(filePath, "utf-8");
       const jsonData = JSON.parse(fileContent);
 
-      if (!Array.isArray(jsonData.tasks)) {
-        throw ErrorHandler.error(
-          400,
-          "Неверный формат tasks.json: поле 'tasks' должно быть массивом"
-        );
-      }
-
       console.log("jsonData:", jsonData);
       return jsonData.tasks;
     } catch (err) {
@@ -182,15 +176,22 @@ class Data {
   // Поиск одного объекта по заданному ключу и значению
   async getFind(name, where) {
     const filePath = path.join(this.baseDir, name);
-    console.log(name, where);
+    console.log("getFind: " + name, where);
+
+    let section = name.replace(".json", "");
 
     try {
       const fileContent = await fs.readFile(filePath, "utf-8");
       const jsonData = JSON.parse(fileContent);
 
+      // Проверяем, существует ли указанный раздел в данных
+      if (!jsonData[section]) {
+        throw new Error(`Секция ${section} не найдена в файле ${name}`);
+      }
+
       // Ищем первый объект, у которого совпадает нужное поле
-      return jsonData.tasks
-        ? jsonData.tasks.find((task) => task[where.key] === where.value)
+      return jsonData[section]
+        ? jsonData[section].find((item) => item[where.key] === where.value)
         : null;
     } catch (err) {
       console.error("Ошибка при поиске объекта:", err);

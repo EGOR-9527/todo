@@ -1,6 +1,8 @@
 const TokenService = require("./token/tokenService");
 const bcrypt = require("bcrypt");
 const Data = require("../database/data");
+const ErrorHandler = require("../Error/error");
+const { v4: uuidv4 } = require("uuid");
 
 class userService {
   async registration(email, password, name) {
@@ -28,7 +30,7 @@ class userService {
 
       // Создаём нового пользователя
       const newUser = {
-        userId: Date.now().toString(),
+        userId: uuidv4(),
         email: email,
         password: hashedPassword,
         name: name,
@@ -37,7 +39,12 @@ class userService {
 
       await Data.add("users.json", newUser);
 
-      return newUser;
+      return {
+        userId: newUser.userId,
+        email: newUser.email,
+        refreshToken: token.refreshToken,
+        accessToken: token.accessToken,
+      };
     } catch (err) {
       throw ErrorHandler.error(err.code || 500, err.message);
     }
@@ -73,7 +80,9 @@ class userService {
       });
 
       return {
-        message: "Вы успешно вошли",
+        userId: newUser.userId,
+        email: newUser.email,
+        refreshToken: token.refreshToken,
         accessToken: token.accessToken,
       };
     } catch (err) {
@@ -110,16 +119,23 @@ class userService {
     try {
       console.log(userId, name, text);
 
+      const user = await Data.getFind("users.json", {
+        key: "userId",
+        value: userId,
+      });
+
+      if (!user) {
+        // Если пользователь не существует, выбрасываем ошибку
+        throw ErrorHandler.error(404, `Пользователь с id ${userId} не найден`);
+      }
+
       // Сначала получаем все задачи из файла
-      const existingTasks = await Data.getAll("tasks.json");
-      console.log("existingTasks:", existingTasks);
+      const taskWithSimilarName = await Data.getFind("tasks.json", {
+        key: "name",
+        value: name,
+      });
 
-      // Проверяем, есть ли уже задача с таким же name и userId
-      const taskExists = existingTasks.some(
-        (task) => task.name === name && task.userId === userId
-      );
-
-      if (taskExists) {
+      if (taskWithSimilarName) {
         // Если такая задача уже есть, выбрасываем ошибку
         throw ErrorHandler.error(
           400,
@@ -129,7 +145,7 @@ class userService {
 
       // Если задачи нет, добавляем новую
       const data = await Data.add("tasks.json", {
-        taskId: Date.now().toString(),
+        taskId: uuidv4(),
         name: name,
         text: text,
         userId: userId,
