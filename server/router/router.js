@@ -38,15 +38,18 @@ class Router {
     //проверяем есть ли такой роутер или метод
     if (!route || route.method !== method) {
       res.setHeader("Content-Type", "application/json");
-      res.end(JSON.stringify(ErrorHandler.error(404, "Сервер не получил ответ от пользователя")));
+      res.end(
+        JSON.stringify(
+          ErrorHandler.error(404, "Сервер не получил ответ от пользователя")
+        )
+      );
+      return;
     }
 
     //вызываем callback
     try {
       if (Array.isArray(route.callback)) {
-        route.callback.forEach((callback) => {
-          callback(req, res);
-        });
+        route.callback.forEach(cb => cb(req, res));
       } else {
         route.callback(req, res);
       }

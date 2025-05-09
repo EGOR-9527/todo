@@ -27,7 +27,7 @@ const start = async () => {
     await createBD();
 
     server.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
+      console.log(`http://localhost:${PORT}`);
     });
   } catch (err) {
     console.error("Ошибка при старте сервера:", err);

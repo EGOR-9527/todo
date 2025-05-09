@@ -1,4 +1,12 @@
 {
-  "users": [],
-  "updatedAt": "2025-05-09T10:46:48.449Z"
+  "users": [
+    {
+      "userId": "1746815332276",
+      "email": "test@example.com",
+      "password": "$2b$10$7lkzUSmVOjJCKK11wMMyh.8WXcSN4FnLaE31mTCB9rtmjlEfB4uDO",
+      "name": "Test",
+      "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJuYW1lIjoiVGVzdCIsImlhdCI6MTc0NjgxNTUwNCwiZXhwIjoxNzQ5NDA3NTA0fQ.KS1kAuRjWE-Y_j9DkPdY21i9rWzH4lu16yAtjvimDFo"
+    }
+  ],
+  "updatedAt": "2025-05-09T18:31:44.374Z"
 }

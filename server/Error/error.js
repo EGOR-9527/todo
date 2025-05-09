@@ -3,11 +3,11 @@ class ErrorHandler {
   //фун для добавленя ошибок
   error(code, message) {
     if (typeof code === "number" || !Number.isInteger(code)) {
-      throw new Error("Error code must be an integer");
+      console.error("Error code must be an integer");
     }
 
     if (typeof message !== "string" || message.trim() === "") {
-      throw new Error("Error message must be a non-empty string");
+      console.error("Error message must be a non-empty string");
     }
 
     console.log(code, message);

@@ -1,6 +1,6 @@
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
-const Data = require("../../database/creteBD");
+const Data = require("../../database/data");
 const ErrorHandler = require("../../Error/error");
 
 class TokenService {
@@ -22,7 +22,7 @@ class TokenService {
 
       return { accessToken, refreshToken };
     } catch (err) {
-      console.log(ErrorHandler.error(500, err.message));
+      ErrorHandler.error(500, err.message);
       return null;
     }
   }
@@ -31,29 +31,32 @@ class TokenService {
     try {
       return jwt.verify(token, secretKey);
     } catch (err) {
-      console.log(ErrorHandler.error(500, err.message));
+      ErrorHandler.error(500, err.message);
       return null;
     }
   }
 
   async saveToken(email, refreshToken) {
     try {
-      const tokenData = await Data.getFind('users.json', { key: 'refreshToken', value: refreshToken });
+      const tokenData = await Data.getFind("users.json", {
+        key: "refreshToken",
+        value: refreshToken,
+      });
       if (tokenData) {
         tokenData.refreshToken = refreshToken;
-        await Data.add('users.json', tokenData);
+        await Data.add("users.json", tokenData);
         return tokenData;
       }
 
       const newUser = {
-        id: Math.floor(Math.random() * (10000 - 1000 + 1)) + 1000,
+        userId: Date.now().toString(),
         email: email,
         refreshToken: refreshToken,
       };
       await Data.add("users.json", newUser);
       return newUser;
     } catch (err) {
-      console.log(ErrorHandler.error(500, err.message));
+      ErrorHandler.error(500, err.message);
       return null;
     }
   }
@@ -61,29 +64,40 @@ class TokenService {
   async removeToken(refreshToken) {
     try {
       if (!refreshToken) {
-        console.log(ErrorHandler.error(500, "Refresh token не определен"));
+        ErrorHandler.error(500, "Refresh token не определен");
         return null;
       }
 
-      const user = await Data.getFind('users.json', { key: 'refreshToken', value: refreshToken });
+      const user = await Data.getFind("users.json", {
+        key: "refreshToken",
+        value: refreshToken,
+      });
       if (user) {
         user.refreshToken = null;
-        await Data.add('users.json', user);
-        return "Токен пользователя успешно удален";
+        await Data.updateByKey(
+          "users.json",
+          "refreshToken",
+          refreshToken,
+          user
+        );
+        return "Вы успешно вышли";
       } else {
         return "Пользователь с таким токеном не найден";
       }
-    } catch (error) {
-      console.error("Ошибка удаления токена пользователя:", error);
+    } catch (err) {
+      ErrorHandler.error(err.code, err.message);
       throw error;
     }
   }
 
   async findToken(refreshToken) {
     try {
-      return await Data.getFind('users.json', { key: 'refreshToken', value: refreshToken });
+      return await Data.getFind("users.json", {
+        key: "refreshToken",
+        value: refreshToken,
+      });
     } catch (error) {
-      console.error("Ошибка поиска токена:", error);
+      ErrorHandler.error(err.code, err.message);
       return null;
     }
   }
