@@ -4,8 +4,9 @@ const ErrorHandler = require("../Error/error");
 
 const authMiddleware = async (req, res) => {
   try {
+    //Поллучаем токены
     const authHeader = req.headers.accessToken;
-    const refreshToken = req.headers["refreshToken"]; // Получаем refreshToken из заголовка
+    const refreshToken = req.headers["refreshToken"];
     console.log("Заголовок accessToken:", authHeader);
     console.log("Заголовок refreshToken:", refreshToken);
 
@@ -13,6 +14,7 @@ const authMiddleware = async (req, res) => {
       throw ErrorHandler.error(401, "Токен доступа отсутствует");
     }
 
+    // Проверяем формат токенов
     const [bearer, accessToken] = authHeader.split(" ");
     if (bearer !== "Bearer" || !accessToken) {
       throw ErrorHandler.error(401, "Неверный формат токена доступа");
@@ -22,6 +24,7 @@ const authMiddleware = async (req, res) => {
       throw ErrorHandler.error(401, "Токен обновления отсутствует");
     }
 
+    //Проверяем валиден ли accessToken
     let userData;
     try {
       userData = tokenService.validateToken(process.env.JWT_ACCESS_KEY, accessToken);
@@ -29,17 +32,19 @@ const authMiddleware = async (req, res) => {
     } catch (accessError) {
       console.log("Access Token истек или недействителен:", accessError.message);
 
-      // Пытаемся валидировать refreshToken
+      // Проверяем валиден ли refreshToken
       userData = tokenService.validateToken(process.env.JWT_REFRASH_KEY, refreshToken);
       if (!userData) {
         throw ErrorHandler.error(401, "Недействительный токен обновления");
       }
 
+      //Ищем пользователя по refreshToken
       const tokenFromDb = await tokenService.findToken(refreshToken);
       if (!tokenFromDb) {
         throw ErrorHandler.error(401, "Токен обновления не найден в БД");
       }
 
+      //создаем новый токен
       const tokens = await tokenService.generateTokens({
         userId: userData.userId,
         email: userData.email,
@@ -48,8 +53,8 @@ const authMiddleware = async (req, res) => {
       console.log("Новые токены сгенерированы");
 
       // Отправляем новый refreshToken и новый accessToken в заголовках
-      res.setHeader("New-Access-Token", tokens.accessToken); // отправка нового accessToken
-      res.setHeader("X-Refresh-Token", tokens.refreshToken); // отправка нового refreshToken
+      res.setHeader("accessToken", tokens.accessToken);
+      res.setHeader("refreshToken", tokens.refreshToken);
       req.user = userData;
       console.log("Токены обновлены, новый Access Token и Refresh Token отправлены");
 
