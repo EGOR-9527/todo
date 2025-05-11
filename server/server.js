@@ -4,10 +4,18 @@ const startRouters = require("./router/index");
 const createBD = require("./database/creteBD");
 const ErrorHandler = require("./Error/error");
 
+const PORT = process.env.PORT;
+
+// Создаём HTTP сервер
 const server = http.createServer(async (req, res) => {
   try {
-    // Обрабатываем запросы через роутеры
-    startRouters(req, res);
+    // Устанавливаем CORS-заголовки
+    res.setHeader("Access-Control-Allow-Origin", process.env.URL_CLIENT); // Можно указать конкретный домен вместо "*"
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+    // Обрабатываем обычные запросы
+    await startRouters(req, res);
   } catch (err) {
     console.error(
       "Произошла ошибка при настройке базы данных или работе с маршрутизатором:",
@@ -19,13 +27,9 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 5000;
-
 const start = async () => {
   try {
-    // Создаём базу данных
     await createBD();
-
     server.listen(PORT, () => {
       console.log(`http://localhost:${PORT}`);
     });

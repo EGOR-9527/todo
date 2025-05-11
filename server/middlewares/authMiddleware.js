@@ -4,10 +4,10 @@ const ErrorHandler = require("../Error/error");
 
 const authMiddleware = async (req, res) => {
   try {
-    const authHeader = req.headers.authorization;
-    const refreshToken = req.headers["x-refresh-token"]; // Получаем refreshToken из заголовка
-    console.log("Заголовок Authorization:", authHeader);
-    console.log("Заголовок X-Refresh-Token:", refreshToken);
+    const authHeader = req.headers.accessToken;
+    const refreshToken = req.headers["refreshToken"]; // Получаем refreshToken из заголовка
+    console.log("Заголовок accessToken:", authHeader);
+    console.log("Заголовок refreshToken:", refreshToken);
 
     if (!authHeader) {
       throw ErrorHandler.error(401, "Токен доступа отсутствует");
